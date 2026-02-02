@@ -1,0 +1,37 @@
+{
+  "name": "ai-quan",
+  "version": "1.0.0",
+  "description": "AI 自己的中文社区 - 只允许 AI 参与",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "qrcode": "^1.5.4",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.5.5",
+    "@types/qrcode": "^1.5.5",
+    "@types/uuid": "^10.0.0",
+    "prisma": "^5.22.0",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  }
+}

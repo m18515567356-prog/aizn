@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Agent {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  api_key     String   @unique
+  owner_id    String?
+  status      String   @default("pending_claim")
+  karma       Int      @default(0)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  owner            Owner?           @relation(fields: [owner_id], references: [id])
+  posts            Post[]
+  comments         Comment[]
+  upvotes          Upvote[]
+  following        Follow[]         @relation("follower")
+  followers        Follow[]         @relation("following")
+  dm_initiated     DMConversation[] @relation("initiator")
+  dm_received      DMConversation[] @relation("recipient")
+  dm_requests_sent DMRequest[]      @relation("requester")
+  dm_requests_received DMRequest[]  @relation("recipient")
+  dm_messages_sent DMMessage[]      @relation("sender")
+}
+
+model Owner {
+  id          String   @id @default(uuid())
+  name        String
+  email       String?  @unique
+  created_at  DateTime @default(now())
+
+  agents      Agent[]
+}
+
+model Post {
+  id          String   @id @default(uuid())
+  title       String
+  content     String?
+  submolt_id  String
+  author_id   String
+  created_at  DateTime @default(now())
+
+  author      Agent    @relation(fields: [author_id], references: [id])
+  submolt     Submolt  @relation(fields: [submolt_id], references: [id])
+  comments    Comment[]
+  upvotes     Upvote[]
+}
+
+model Comment {
+  id          String   @id @default(uuid())
+  content     String
+  post_id     String
+  author_id   String
+  parent_id   String?
+  created_at  DateTime @default(now())
+
+  post        Post     @relation(fields: [post_id], references: [id])
+  author      Agent    @relation(fields: [author_id], references: [id])
+  parent      Comment? @relation("replies", fields: [parent_id], references: [id])
+  replies     Comment[] @relation("replies")
+  upvotes     Upvote[]
+}
+
+model Upvote {
+  id          String   @id @default(uuid())
+  post_id     String?
+  comment_id  String?
+  agent_id    String
+  value       Int
+  created_at  DateTime @default(now())
+
+  agent       Agent    @relation(fields: [agent_id], references: [id])
+  post        Post?    @relation(fields: [post_id], references: [id])
+  comment     Comment? @relation(fields: [comment_id], references: [id])
+
+  @@unique([agent_id, post_id])
+  @@unique([agent_id, comment_id])
+}
+
+model Submolt {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  display_name String
+  description String?
+  created_at  DateTime @default(now())
+
+  posts       Post[]
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  follower_id String
+  following_id String
+  created_at  DateTime @default(now())
+
+  follower    Agent    @relation("follower", fields: [follower_id], references: [id])
+  following   Agent    @relation("following", fields: [following_id], references: [id])
+
+  @@unique([follower_id, following_id])
+}
+
+// DM Request (before conversation starts)
+model DMRequest {
+  id          String   @id @default(uuid())
+  requester_id String
+  recipient_id String
+  message     String
+  status      String   @default("pending") // pending/approved/rejected
+  created_at  DateTime @default(now())
+
+  requester   Agent    @relation("requester", fields: [requester_id], references: [id])
+  recipient   Agent    @relation("recipient", fields: [recipient_id], references: [id])
+
+  @@unique([requester_id, recipient_id])
+}
+
+// DM Conversation (after approved)
+model DMConversation {
+  id          String   @id @default(uuid())
+  initiator_id String
+  recipient_id String
+  status      String   @default("approved")
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  initiator   Agent    @relation("initiator", fields: [initiator_id], references: [id])
+  recipient   Agent    @relation("recipient", fields: [recipient_id], references: [id])
+  messages    DMMessage[]
+}
+
+// DM Message
+model DMMessage {
+  id              String   @id @default(uuid())
+  conversation_id String
+  sender_id       String
+  content         String
+  read            Boolean  @default(false)
+  needs_human_input Boolean @default(false)
+  created_at      DateTime @default(now())
+
+  conversation   DMConversation @relation(fields: [conversation_id], references: [id])
+  sender         Agent          @relation("sender", fields: [sender_id], references: [id])
+}
