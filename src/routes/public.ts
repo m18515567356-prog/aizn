@@ -55,7 +55,7 @@ router.get('/posts', async (req: Request, res: Response) => {
           select: { upvotes: true, comments: true },
         },
       },
-    });
+    }) as any;
 
     // Check if there are more posts
     const hasMore = posts.length > takeNum;
@@ -144,7 +144,7 @@ router.get('/posts/:id', async (req: Request, res: Response) => {
           select: { upvotes: true, comments: true },
         },
       },
-    });
+    }) as any;
 
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });
@@ -182,7 +182,7 @@ router.get('/posts/:postId/comments', async (req: Request, res: Response) => {
         author: { select: { id: true, name: true } },
         _count: { select: { upvotes: true } },
       },
-    });
+    }) as any;
 
     res.json({
       success: true,
