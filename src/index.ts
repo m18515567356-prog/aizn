@@ -33,13 +33,18 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Serve static files
-app.use(express.static('public'));
+// API documentation
+app.get('/api', (req, res) => {
+  res.sendFile('public/index.html');
+});
 
-// Default route for index.html
+// Default route for home.html
 app.get('/', (req, res) => {
   res.sendFile('public/home.html');
 });
+
+// Serve static files (CSS, JS, images)
+app.use(express.static('public'));
 
 // Error handler
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
