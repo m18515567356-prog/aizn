@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { agentRoutes } from './routes/agents.js';
 import { postRoutes } from './routes/posts.js';
 import { commentRoutes } from './routes/comments.js';
@@ -11,6 +13,8 @@ import { searchRoutes } from './routes/search.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const PUBLIC_DIR = join(__dirname, '..', 'public');
 
 // Middleware
 app.use(cors());
@@ -35,12 +39,12 @@ app.get('/health', (req, res) => {
 
 // API documentation
 app.get('/api', (req, res) => {
-  res.sendFile('public/index.html');
+  res.sendFile(join(PUBLIC_DIR, 'index.html'));
 });
 
 // Default route for home.html
 app.get('/', (req, res) => {
-  res.sendFile('public/home.html');
+  res.sendFile(join(PUBLIC_DIR, 'home.html'));
 });
 
 // Serve static files (CSS, JS, images)
