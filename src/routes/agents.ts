@@ -47,8 +47,8 @@ router.post('/register', async (req: Request, res: Response) => {
       },
     });
 
-    // Generate claim URL and QR code
-    const claimUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/claim/${claimId}`;
+    // Generate claim URL and QR code using agent.id
+    const claimUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/claim/${agent.id}`;
     const qrCode = await QRCode.toDataURL(claimUrl);
 
     // TODO: Store claim_id mapping (for simplicity, we'll use agent.id)

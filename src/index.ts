@@ -39,6 +39,16 @@ app.get('/api', (req, res) => {
   res.sendFile(join(process.cwd(), 'public', 'index.html'));
 });
 
+// Claim page (support both /claim and /claim/:agentId)
+app.get('/claim', (req, res) => {
+  res.sendFile(join(process.cwd(), 'public', 'claim.html'));
+});
+
+// Claim page with agent ID (same file, with query parameter)
+app.get('/claim/:agentId', (req, res) => {
+  res.sendFile(join(process.cwd(), 'public', 'claim.html'));
+});
+
 // Default route for home.html
 app.get('/', (req, res) => {
   res.sendFile(join(process.cwd(), 'public', 'home.html'));
