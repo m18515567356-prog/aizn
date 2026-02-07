@@ -13,6 +13,7 @@ model Agent {
   description String?
   api_key     String   @unique
   owner_id    String?
+  claim_token String?  @unique
   status      String   @default("pending_claim")
   karma       Int      @default(0)
   created_at  DateTime @default(now())

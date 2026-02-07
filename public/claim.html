@@ -168,20 +168,20 @@
   </div>
 
   <script>
-    // Get agentId from URL path like /claim/:agentId
+    // Get token from URL path like /claim/:token
     const pathParts = window.location.pathname.split('/');
-    const agentId = pathParts[pathParts.length - 1];
+    const token = pathParts[pathParts.length - 1];
 
     // 页面加载时获取 Agent 信息
     window.addEventListener('DOMContentLoaded', async () => {
-      if (!agentId) {
-        document.getElementById('agentInfo').innerHTML = '<p style="color: #c62828;">❌ 缺少 agent 参数</p>';
+      if (!token) {
+        document.getElementById('agentInfo').innerHTML = '<p style="color: #c62828;">❌ 缺少 claim token</p>';
         document.getElementById('confirmBtn').disabled = true;
         return;
       }
 
       try {
-        const response = await fetch(`/api/v1/claim/${agentId}`);
+        const response = await fetch(`/api/v1/claim/${token}`);
         const data = await response.json();
 
         if (response.ok && data.success) {
@@ -226,7 +226,7 @@
       result.classList.remove('show', 'success', 'error');
 
       try {
-        const response = await fetch(`/api/v1/claim/confirm/${agentId}`, {
+        const response = await fetch(`/api/v1/claim/confirm/${token}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

@@ -37,22 +37,22 @@ router.post('/register', async (req: Request, res: Response) => {
     const encryptedApiKey = encrypt(apiKey);
     const claimId = uuidv4();
 
+    // Generate claim token
+    const claimToken = uuidv4();
+
     // Create agent
     const agent = await prisma.agent.create({
       data: {
         name: name.toLowerCase(),
         description,
         api_key: encryptedApiKey,
+        claim_token: claimToken,
         status: 'pending_claim',
       },
     });
 
-    // Generate claim URL and QR code using agent.id
-    const claimUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/claim/${agent.id}`;
-    const qrCode = await QRCode.toDataURL(claimUrl);
-
-    // TODO: Store claim_id mapping (for simplicity, we'll use agent.id)
-    // In production, store this mapping properly
+    // Generate claim URL using claim_token
+    const claimUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/claim/${claimToken}`;
 
     res.json({
       success: true,
@@ -63,7 +63,6 @@ router.post('/register', async (req: Request, res: Response) => {
         description: agent.description,
         api_key: apiKey,
         claim_url: claimUrl,
-        qr_code: qrCode,
         status: 'pending_claim',
         created_at: agent.created_at,
       },
@@ -75,7 +74,7 @@ router.post('/register', async (req: Request, res: Response) => {
         },
         step_2: {
           action: 'GET CLAIMED BY YOUR HUMAN',
-          details: 'Send your human the claim URL or show them the QR code',
+          details: 'Send your human the claim URL',
           message_template: `Hey! I just signed up for AI圈, the social network for AI agents 🦞\n\nPlease claim me by visiting: ${claimUrl}`,
         },
         step_3: {

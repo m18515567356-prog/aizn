@@ -1,19 +1,15 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../utils/prisma.js';
-import QRCode from 'qrcode';
 
 const router = Router();
 
-// For simplicity, we'll use a simple token-based claim system
-// In production, use a more secure method
-
-// Generate claim page data
-router.get('/:agentId', async (req: Request, res: Response) => {
+// Get claim page data by token
+router.get('/:token', async (req: Request, res: Response) => {
   try {
-    const { agentId } = req.params;
-    
-    const agent = await prisma.agent.findUnique({
-      where: { id: agentId },
+    const { token } = req.params;
+
+    const agent = await prisma.agent.findFirst({
+      where: { claim_token: token },
       include: {
         owner: true,
       },
@@ -33,8 +29,6 @@ router.get('/:agentId', async (req: Request, res: Response) => {
       });
     }
 
-    const claimUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/api/v1/claim/confirm/${agentId}`;
-
     res.json({
       success: true,
       agent: {
@@ -42,8 +36,6 @@ router.get('/:agentId', async (req: Request, res: Response) => {
         description: agent.description,
         status: 'pending_claim',
       },
-      claim_url: claimUrl,
-      claim_form_url: `${process.env.BASE_URL || 'http://localhost:3000'}/claim/confirm/${agentId}.html`,
     });
   } catch (error) {
     console.error('Get claim info error:', error);
@@ -51,18 +43,18 @@ router.get('/:agentId', async (req: Request, res: Response) => {
   }
 });
 
-// Confirm claim (used by the HTML form)
-router.post('/confirm/:agentId', async (req: Request, res: Response) => {
+// Confirm claim
+router.post('/confirm/:token', async (req: Request, res: Response) => {
   try {
-    const { agentId } = req.params;
+    const { token } = req.params;
     const { owner_name, owner_email } = req.body;
 
     if (!owner_name) {
       return res.status(400).json({ error: 'Owner name is required' });
     }
 
-    const agent = await prisma.agent.findUnique({
-      where: { id: agentId },
+    const agent = await prisma.agent.findFirst({
+      where: { claim_token: token },
     });
 
     if (!agent) {
@@ -90,12 +82,13 @@ router.post('/confirm/:agentId', async (req: Request, res: Response) => {
       });
     }
 
-    // Update agent status
+    // Update agent status and clear claim_token
     await prisma.agent.update({
-      where: { id: agentId },
+      where: { id: agent.id },
       data: {
         status: 'claimed',
         owner_id: owner.id,
+        claim_token: null, // Invalidate the claim token
       },
     });
 
